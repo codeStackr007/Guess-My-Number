@@ -1,12 +1,5 @@
 "use strict";
 
-// ==========================================
-// VARIATION A — YOUR IDEA
-// Badge: lime (#c8f77b) bg, #222 text
-// All unguessed cells: lime border + lime text (mirrors how lose does white)
-// Body: green #7eb604
-// ==========================================
-
 // 1. AUDIO
 const winSound = new Audio("sounds/WIN.mp3");
 const errorSound = new Audio("sounds/ERROR.mp3");
@@ -51,26 +44,35 @@ for (let i = 1; i <= 20; i++) {
 }
 document.getElementById("js-highscore").textContent = highscore;
 
-// 5. START SOUND
+// 5. START SOUND FUNCTION
 const playStartSound = function () {
+  // Lock controls and show "Game starting..." message
   lockControls();
+  gameActive = false;
+  displayMessage("🎵 Game starting...");
+
   startSound.currentTime = 0;
   const playPromise = startSound.play();
+
   if (playPromise !== undefined) {
     playPromise
       .then(function () {
+        // Unlock only after sound finishes
         startSound.onended = function () {
           gameActive = true;
           unlockControls();
+          displayMessage("Start guessing...");
         };
       })
       .catch(function () {
+        // Fallback if autoplay blocked
         const unlock = function () {
           startSound.currentTime = 0;
           startSound.play().then(function () {
             startSound.onended = function () {
               gameActive = true;
               unlockControls();
+              displayMessage("Start guessing...");
             };
           });
           window.removeEventListener("mousedown", unlock);
@@ -82,6 +84,7 @@ const playStartSound = function () {
   } else {
     gameActive = true;
     unlockControls();
+    displayMessage("Start guessing...");
   }
 };
 
@@ -97,10 +100,11 @@ const handleLoss = function () {
   document.querySelector("body").style.backgroundColor = "#950303";
   document.getElementById("js-badge").textContent = secretNumber;
 
-  document.querySelectorAll(".numgrid__cell").forEach(function (cell) {
-    cell.style.color = "#fff";
-    cell.style.borderColor = "#fff";
-  });
+  const allCells = document.querySelectorAll(".numgrid__cell");
+  for (let i = 0; i < allCells.length; i++) {
+    allCells[i].style.color = "#fff";
+    allCells[i].style.borderColor = "#fff";
+  }
 
   document.querySelector(".numgrid__label").style.color = "#fff";
   document.querySelector(".panel__attempts").style.color = "#fff";
@@ -142,7 +146,7 @@ const checkGuess = function () {
 
     setHint("win");
 
-    // Badge: lime bg + dark text (your idea)
+    // Badge: lime bg + dark text
     const badge = document.getElementById("js-badge");
     badge.textContent = secretNumber;
     badge.style.backgroundColor = "#c8f77b";
@@ -150,19 +154,18 @@ const checkGuess = function () {
 
     cell.classList.add("numgrid__cell--win");
 
-    // Body goes green
-
-    // All unguessed cells: lime border + lime text — mirrors the lose white treatment
-    document.querySelectorAll(".numgrid__cell").forEach(function (c) {
+    // All unguessed cells lime border + lime text
+    const allCells = document.querySelectorAll(".numgrid__cell");
+    for (let i = 0; i < allCells.length; i++) {
       if (
-        !c.classList.contains("numgrid__cell--win") &&
-        !c.classList.contains("numgrid__cell--high") &&
-        !c.classList.contains("numgrid__cell--low")
+        !allCells[i].classList.contains("numgrid__cell--win") &&
+        !allCells[i].classList.contains("numgrid__cell--high") &&
+        !allCells[i].classList.contains("numgrid__cell--low")
       ) {
-        c.style.color = "#c8f77b";
-        c.style.borderColor = "#c8f77b";
+        allCells[i].style.color = "#c8f77b";
+        allCells[i].style.borderColor = "#c8f77b";
       }
-    });
+    }
 
     document.querySelector(".numgrid__label").style.color = "#222222";
     document.querySelector(".panel__attempts").style.color = "#222222";
@@ -207,7 +210,8 @@ document.getElementById("js-again").addEventListener("click", function () {
   attempts = 0;
   gameActive = false;
 
-  displayMessage("Start guessing...");
+  displayMessage("🎵 Game starting..."); // show indicator
+
   document.getElementById("js-score").textContent = score;
   document.getElementById("js-attempts").textContent = attempts;
   document.getElementById("js-badge").textContent = "?";
@@ -223,16 +227,18 @@ document.getElementById("js-again").addEventListener("click", function () {
   document.querySelector(".panel__attempts").style.color = "";
   document.documentElement.removeAttribute("data-hint");
 
-  document.querySelectorAll(".numgrid__cell").forEach(function (cell) {
-    cell.className = "numgrid__cell";
-    cell.style.color = "";
-    cell.style.borderColor = "";
-    cell.style.backgroundColor = "";
-  });
+  const allCells = document.querySelectorAll(".numgrid__cell");
+  for (let i = 0; i < allCells.length; i++) {
+    allCells[i].className = "numgrid__cell";
+    allCells[i].style.color = "";
+    allCells[i].style.borderColor = "";
+    allCells[i].style.backgroundColor = "";
+  }
 
   const guessInput = document.getElementById("js-input");
   guessInput.value = "";
 
+  // Play start sound again with lock/unlock flow
   playStartSound();
 });
 

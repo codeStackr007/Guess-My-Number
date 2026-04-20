@@ -19,12 +19,12 @@
 
   /* Typography */
   --font: "Press Start 2P", "Courier New", Courier, monospace;
-  --text-xs: 0.625rem; /* 10px - bumped for legibility */
-  --text-sm: 0.6875rem; /* 11px */
-  --text-base: 0.75rem; /* 12px */
-  --text-md: 0.875rem; /* 14px */
-  --text-xl: 1.5rem; /* 24px */
-  --text-badge: 2.625rem; /* 42px */
+  --text-xs: 0.625rem;
+  --text-sm: 0.6875rem;
+  --text-base: 0.75rem;
+  --text-md: 0.875rem;
+  --text-xl: 1.5rem;
+  --text-badge: 2.625rem;
 
   /* Borders */
   --border-thick: 0.4375rem solid var(--color-border);
@@ -41,7 +41,7 @@
   --header-pb-mobile: 3rem;
 }
 
-/* Hint overrides - Using attribute selectors for theming */
+/* Hint overrides */
 :root[data-hint="win"] {
   --color-hint: var(--color-win);
 }
@@ -95,11 +95,10 @@ body {
   inline-size: 100%;
   border-block-end: var(--border-thick);
   flex-shrink: 0;
-  padding-block-start: 5rem; /* Rounded magic number */
+  padding-block-start: 5rem;
   padding-block-end: var(--header-pb-mobile);
 }
 
-/* Nav Container */
 .header__nav {
   position: absolute;
   inset-block-start: 0;
@@ -112,7 +111,6 @@ body {
   pointer-events: auto;
 }
 
-/* Again button */
 .header__again {
   position: absolute;
   inset-block-start: 0.75rem;
@@ -139,7 +137,6 @@ body {
   display: none;
 }
 
-/* Range display */
 .header__between {
   position: absolute;
   inset-block-start: 1rem;
@@ -156,7 +153,6 @@ body {
   display: none;
 }
 
-/* Title */
 .header__title {
   text-align: center;
   font-size: clamp(0.875rem, 4vw, 1.625rem);
@@ -164,7 +160,6 @@ body {
   margin-block-end: 1.875rem;
 }
 
-/* Question Mark Badge */
 .header__badge {
   position: absolute;
   inset-block-end: 0;
@@ -212,7 +207,7 @@ body {
   justify-content: flex-start;
 }
 
-/* Input Styles */
+/* Input */
 .panel__input {
   background: none;
   border: var(--border-mid);
@@ -229,37 +224,50 @@ body {
   border-color: var(--color-text);
 }
 
-/* Feedback Messages */
+/* Disabled state during start sound */
+.panel__input:disabled,
+.btn--solid:disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+}
+
+/* Feedback message — BIGGER */
 .panel__message {
-  font-size: var(--text-md);
+  font-size: 1.0625rem;
   line-height: 2;
   color: var(--color-hint);
   min-block-size: 2.4em;
 }
+
 .panel__divider {
   inline-size: 100%;
   border: none;
   border-block-start: var(--border-dim);
 }
+
+/* Score line — BIGGER */
 .panel__score {
-  font-size: var(--text-md);
+  font-size: 1rem;
   color: var(--color-muted);
 }
 .panel__score span {
   color: var(--color-text);
+  font-size: 1.125rem;
 }
 
 .panel__score-hs,
 #js-highscore {
   color: var(--color-win);
+  font-size: 1.125rem;
 }
 
 .panel__score--highscore span {
   color: var(--color-win);
 }
 
+/* Attempts — slightly larger */
 .panel__attempts {
-  font-size: var(--text-sm);
+  font-size: var(--text-base); /* was --text-sm (0.6875rem), now 0.75rem */
   color: var(--color-faint);
 }
 

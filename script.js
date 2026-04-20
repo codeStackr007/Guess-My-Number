@@ -1,27 +1,24 @@
 "use strict";
 
 // ==========================================
-// 1. DATA (The Game's Memory)
+// 1. AUDIO
+// ==========================================
+const winSound = new Audio("sounds/WIN.mp3");
+const errorSound = new Audio("sounds/ERROR.mp3");
+const gameOverSound = new Audio("sounds/OVER.mp3");
+const startSound = new Audio("sounds/START.mp3");
+
+// ==========================================
+// 2. DATA
 // ==========================================
 let secretNumber = Math.floor(Math.random() * 20) + 1;
 let score = 20;
 let attempts = 0;
-let gameActive = true;
-
-// Load highscore from localStorage (persist across reloads)
-let highscore = localStorage.getItem("highscore") || 0;
-document.getElementById("js-highscore").textContent = highscore;
+let highscore = 0;
+let gameActive = false; // locked until start sound finishes
 
 // ==========================================
-// 2. AUDIO (The Game's Voice)
-// ==========================================
-const winSound = new Audio("sounds/WIN.mp3");
-const errorSound = new Audio("sounds/ERROR.mp3");
-const gameOverSound = new Audio("sounds/GAME%20OVER.mp3"); // %20 is for the space
-const startSound = new Audio("sounds/START.mp3");
-
-// ==========================================
-// 3. TOOLS (Helper Functions)
+// 3. HELPERS
 // ==========================================
 const displayMessage = function (message) {
   document.getElementById("js-message").textContent = message;
@@ -31,8 +28,20 @@ const setHint = function (type) {
   document.documentElement.setAttribute("data-hint", type);
 };
 
+// Lock/unlock the game controls (input + check button)
+const lockControls = function () {
+  document.getElementById("js-input").disabled = true;
+  document.getElementById("js-check").disabled = true;
+};
+
+const unlockControls = function () {
+  document.getElementById("js-input").disabled = false;
+  document.getElementById("js-check").disabled = false;
+  document.getElementById("js-input").focus();
+};
+
 // ==========================================
-// 4. SETUP (Building the Grid)
+// 4. BUILD GRID (once, on page load)
 // ==========================================
 const gridContainer = document.getElementById("js-grid");
 for (let i = 1; i <= 20; i++) {
@@ -43,18 +52,61 @@ for (let i = 1; i <= 20; i++) {
   gridContainer.appendChild(cell);
 }
 
-// ==========================================
-// 5. THE STARTING SOUND
-// ==========================================
-const playStartOnce = function () {
-  startSound.currentTime = 0;
-  startSound.play();
-  window.removeEventListener("mousedown", playStartOnce);
-};
-window.addEventListener("mousedown", playStartOnce);
+document.getElementById("js-highscore").textContent = highscore;
 
 // ==========================================
-// 6. LOSING THE GAME
+// 5. START SOUND
+// ==========================================
+// Browser requires a user gesture before any audio can play.
+// We unlock audio silently on the very first interaction,
+// then immediately play the start sound.
+const playStartSound = function (callback) {
+  lockControls();
+
+  // Try to play directly — works if audio context is already unlocked
+  const tryPlay = function () {
+    startSound.currentTime = 0;
+    const playPromise = startSound.play();
+
+    if (playPromise !== undefined) {
+      playPromise
+        .then(function () {
+          // Sound is playing — unlock controls when it ends
+          startSound.onended = function () {
+            gameActive = true;
+            unlockControls();
+            if (callback) callback();
+          };
+        })
+        .catch(function () {
+          // Autoplay blocked — wait for first interaction then retry
+          const unlock = function () {
+            startSound.currentTime = 0;
+            startSound.play().then(function () {
+              startSound.onended = function () {
+                gameActive = true;
+                unlockControls();
+                if (callback) callback();
+              };
+            });
+            window.removeEventListener("mousedown", unlock);
+            window.removeEventListener("keydown", unlock);
+          };
+          window.addEventListener("mousedown", unlock);
+          window.addEventListener("keydown", unlock);
+        });
+    } else {
+      // Old browser fallback
+      gameActive = true;
+      unlockControls();
+    }
+  };
+
+  tryPlay();
+};
+
+// ==========================================
+// 6. LOSE
 // ==========================================
 const handleLoss = function () {
   displayMessage("💥 You lose! Try again.");
@@ -67,26 +119,25 @@ const handleLoss = function () {
   document.querySelector("body").style.backgroundColor = "#950303";
   document.getElementById("js-badge").textContent = secretNumber;
 
-  const allCells = document.querySelectorAll(".numgrid__cell");
-  for (let i = 0; i < allCells.length; i++) {
-    allCells[i].style.color = "#fff";
-    allCells[i].style.borderColor = "#fff";
-  }
+  document.querySelectorAll(".numgrid__cell").forEach(function (cell) {
+    cell.style.color = "#fff";
+    cell.style.borderColor = "#fff";
+  });
 
   document.querySelector(".numgrid__label").style.color = "#fff";
   document.querySelector(".panel__attempts").style.color = "#fff";
 };
 
 // ==========================================
-// 7. CHECKING THE GUESS
+// 7. CHECK GUESS
 // ==========================================
 const checkGuess = function () {
-  if (gameActive === false) return;
+  if (!gameActive) return;
 
   const guessInput = document.getElementById("js-input");
   const guess = Number(guessInput.value);
 
-  if (!guessInput.value) {
+  if (!guessInput.value.trim()) {
     displayMessage("⛔ No Number!");
     errorSound.currentTime = 0;
     errorSound.play();
@@ -106,6 +157,7 @@ const checkGuess = function () {
   const cell = document.getElementById("cell-" + guess);
 
   if (guess === secretNumber) {
+    // WIN
     displayMessage("Correct 🎉");
     gameActive = false;
 
@@ -116,29 +168,28 @@ const checkGuess = function () {
     document.getElementById("js-badge").textContent = secretNumber;
     cell.classList.add("numgrid__cell--win");
 
-    // Apply win color to message panel
-    const messageBox = document.getElementById("panel__message");
-    messageBox.style.backgroundColor = getComputedStyle(
-      document.documentElement,
-    ).getPropertyValue("--color-win");
-    messageBox.style.color = "#000";
+    document.querySelector("body").style.backgroundColor = "#7eb604";
+
+    document.querySelectorAll(".numgrid__cell").forEach(function (cell) {
+      cell.style.color = "#fffff";
+      cell.style.borderColor = "#ffffff";
+    });
+
+    document.querySelector(".numgrid__label").style.color = "#222222";
+    document.querySelector(".panel__attempts").style.color = "#222222";
 
     if (score > highscore) {
       highscore = score;
-      localStorage.setItem("highscore", highscore); // save persistently
       document.getElementById("js-highscore").textContent = highscore;
     }
   } else {
-    if (score > 1 && attempts < 20) {
-      if (guess > secretNumber) {
-        displayMessage("Too High! 📈");
-        setHint("high");
-        cell.classList.add("numgrid__cell--high");
-      } else {
-        displayMessage("Too Low 📉");
-        setHint("low");
-        cell.classList.add("numgrid__cell--low");
-      }
+    // WRONG GUESS
+    if (score > 1) {
+      displayMessage(guess > secretNumber ? "Too High! 📈" : "Too Low 📉");
+      setHint(guess > secretNumber ? "high" : "low");
+      cell.classList.add(
+        guess > secretNumber ? "numgrid__cell--high" : "numgrid__cell--low",
+      );
 
       errorSound.currentTime = 0;
       errorSound.play();
@@ -154,21 +205,50 @@ const checkGuess = function () {
   guessInput.focus();
 };
 
-// --- LISTENERS ---
+// ==========================================
+// 8. LISTENERS
+// ==========================================
 document.getElementById("js-check").addEventListener("click", checkGuess);
-document
-  .getElementById("js-input")
-  .addEventListener("keydown", function (event) {
-    if (event.key === "Enter") {
-      checkGuess();
-    }
-  });
+document.getElementById("js-input").addEventListener("keydown", function (e) {
+  if (e.key === "Enter") checkGuess();
+});
 
 // ==========================================
-// 8. RESETTING (The "Again" Button)
+// 9. RESET
 // ==========================================
 document.getElementById("js-again").addEventListener("click", function () {
-  // Save highscore before reload
-  localStorage.setItem("highscore", highscore);
-  location.reload(); // one-line refresh
+  // Reset data
+  secretNumber = Math.floor(Math.random() * 20) + 1;
+  score = 20;
+  attempts = 0;
+  gameActive = false; // locked until start sound finishes
+
+  // Reset UI text
+  displayMessage("Start guessing...");
+  document.getElementById("js-score").textContent = score;
+  document.getElementById("js-attempts").textContent = attempts;
+  document.getElementById("js-badge").textContent = "?";
+
+  // Reset styles
+  document.querySelector("body").style.backgroundColor = "";
+  document.getElementById("js-grid").style.backgroundColor = "";
+  document.querySelector(".numgrid__label").style.color = "";
+  document.querySelector(".panel__attempts").style.color = "";
+  document.documentElement.removeAttribute("data-hint");
+
+  // Reset grid cells
+  document.querySelectorAll(".numgrid__cell").forEach(function (cell) {
+    cell.className = "numgrid__cell";
+    cell.style.color = "";
+    cell.style.borderColor = "";
+    cell.style.backgroundColor = "";
+  });
+
+  // Play start sound — controls unlock when it finishes
+  playStartSound();
 });
+
+// ==========================================
+// 10. KICK OFF
+// ==========================================
+playStartSound();

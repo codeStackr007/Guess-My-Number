@@ -1,0 +1,85 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Guess My Number!</title>
+    <link
+      href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap"
+      rel="stylesheet"
+    />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css"
+    />
+    <link rel="stylesheet" href="css/style.css" />
+  </head>
+  <body>
+    <header class="header">
+      <nav class="header__nav">
+        <button
+          class="header__again btn"
+          id="js-again"
+          aria-label="Restart game"
+        >
+          <i class="fa-solid fa-rotate"></i>
+          <span class="again-label">Again!</span>
+        </button>
+        <span class="header__between">
+          <span class="range-short">1 – 20</span>
+          <span class="range-long">(Between 1 and 20)</span>
+        </span>
+      </nav>
+
+      <h1 class="header__title">Guess My Number!</h1>
+      <div class="header__badge" id="js-badge">?</div>
+    </header>
+
+    <main class="main">
+      <!-- Left Panel -->
+      <section class="panel panel--left">
+        <div
+          class="numgrid"
+          id="js-grid"
+          aria-label="Number range 1 to 20"
+        ></div>
+        <p class="numgrid__label">Your guesses</p>
+        <input
+          class="panel__input"
+          id="js-input"
+          type="number"
+          min="1"
+          max="20"
+          autocomplete="off"
+          placeholder="_ _"
+        />
+        <button class="btn btn--solid panel__check" id="js-check">
+          Check!
+        </button>
+      </section>
+
+      <!-- Right Panel -->
+      <section class="panel panel--right">
+        <p class="panel__message" id="js-message">Start guessing...</p>
+        <hr class="panel__divider" />
+        <p class="panel__score">
+          <span class="panel__score-icon">🏅</span>
+          <span>Score: <span id="js-score">20</span></span>
+        </p>
+        <p class="panel__score">
+          <span class="panel__score-icon">🥇</span>
+          <span
+            >Highscore:
+            <span class="panel__score-hs" id="js-highscore">0</span></span
+          >
+        </p>
+        <hr class="panel__divider" />
+        <p class="panel__attempts">
+          Attempts: <span id="js-attempts">0</span> / 20
+        </p>
+      </section>
+    </main>
+
+    <script src="script.js"></script>
+  </body>
+</html>

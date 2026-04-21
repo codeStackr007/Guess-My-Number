@@ -1,10 +1,10 @@
 "use strict";
 
 // 1. AUDIO
-const winSound = new Audio("sounds/WIN.mp3");
-const errorSound = new Audio("sounds/ERROR.mp3");
-const gameOverSound = new Audio("sounds/OVER.mp3");
-const startSound = new Audio("sounds/START.mp3");
+const winSound = new Audio("/Upgraded/sounds/WIN.mp3");
+const errorSound = new Audio("/Upgraded/sounds/ERROR.mp3");
+const gameOverSound = new Audio("/Upgraded/sounds/OVER.mp3");
+const startSound = new Audio("/Upgraded/sounds/START.mp3");
 
 // 2. DATA
 let secretNumber = Math.floor(Math.random() * 20) + 1;

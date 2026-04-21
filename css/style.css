@@ -165,7 +165,7 @@ body {
   inset-block-end: 0;
   inset-inline-start: 50%;
   transform: translate(-50%, 50%);
-  inline-size: 6.25rem;
+  inline-size: 7.25rem;
   padding-block: 0.75rem;
   text-align: center;
   font-size: var(--text-badge);

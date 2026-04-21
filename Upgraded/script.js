@@ -19,7 +19,11 @@ const displayMessage = function (message) {
 };
 
 const setHint = function (type) {
-  document.documentElement.setAttribute("data-hint", type);
+  if (type) {
+    document.documentElement.setAttribute("data-hint", type);
+  } else {
+    document.documentElement.removeAttribute("data-hint");
+  }
 };
 
 const lockControls = function () {
@@ -51,6 +55,7 @@ const playStartSequence = function () {
   lockControls();
   gameActive = false;
   displayMessage("⭐ LOADING...");
+  setHint("");
 
   startSound.currentTime = 0;
 
@@ -74,6 +79,7 @@ const playStartSequence = function () {
 const handleLoss = function () {
   displayMessage("💥 You lose! Try again.");
   gameActive = false;
+  setHint("");
 
   gameOverSound.currentTime = 0;
   gameOverSound.play();
@@ -106,19 +112,36 @@ const checkGuess = function (forcedGuess) {
   if (forcedGuess !== undefined) {
     guess = forcedGuess;
   } else {
-    guess = Number(guessInput.value);
+    const rawValue = guessInput.value.trim();
 
-    if (!guessInput.value.trim()) {
+    // Check for empty input
+    if (!rawValue) {
       displayMessage("⛔ No Number!");
       errorSound.currentTime = 0;
       errorSound.play();
+      setHint("");
       return;
     }
 
+    guess = Number(rawValue);
+
+    // Check if it's a valid number
+    if (isNaN(guess) || !Number.isInteger(guess)) {
+      displayMessage("⛔ Invalid number!");
+      errorSound.currentTime = 0;
+      errorSound.play();
+      setHint("");
+      guessInput.value = "";
+      return;
+    }
+
+    // Check range
     if (guess < 1 || guess > 20) {
       displayMessage("⛔ Out of range!");
       errorSound.currentTime = 0;
       errorSound.play();
+      setHint("");
+      guessInput.value = "";
       return;
     }
 
@@ -173,11 +196,10 @@ const checkGuess = function (forcedGuess) {
     }
   } else {
     if (score > 1) {
-      displayMessage(guess > secretNumber ? "Too High! 📈" : "Too Low 📉");
-      setHint(guess > secretNumber ? "high" : "low");
-      cell.classList.add(
-        guess > secretNumber ? "numgrid__cell--high" : "numgrid__cell--low",
-      );
+      const isHigh = guess > secretNumber;
+      displayMessage(isHigh ? "Too High! 📈" : "Too Low 📉");
+      setHint(isHigh ? "high" : "low");
+      cell.classList.add(isHigh ? "numgrid__cell--high" : "numgrid__cell--low");
 
       errorSound.currentTime = 0;
       errorSound.play();
@@ -196,9 +218,14 @@ const checkGuess = function (forcedGuess) {
 };
 
 // 8. LISTENERS
-document.getElementById("js-check").addEventListener("click", checkGuess);
+document.getElementById("js-check").addEventListener("click", function () {
+  checkGuess();
+});
+
 document.getElementById("js-input").addEventListener("keydown", function (e) {
-  if (e.key === "Enter") checkGuess();
+  if (e.key === "Enter") {
+    checkGuess();
+  }
 });
 
 gridContainer.addEventListener("click", function (e) {
@@ -256,7 +283,8 @@ document.getElementById("js-again").addEventListener("click", function () {
   document.querySelectorAll(".panel__divider").forEach(function (el) {
     el.style.borderColor = "";
   });
-  document.documentElement.removeAttribute("data-hint");
+
+  setHint("");
 
   document.querySelectorAll(".numgrid__cell").forEach(function (c) {
     c.className = "numgrid__cell";

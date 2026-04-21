@@ -2,7 +2,6 @@
    DESIGN TOKENS
    ============================================== */
 :root {
-  /* Colors */
   --color-bg: #222222;
   --color-text: #eeeeee;
   --color-border: #eeeeee;
@@ -17,7 +16,6 @@
   --color-high-tint: rgb(105 184 255 / 0.35);
   --color-low-tint: rgb(255 140 105 / 0.35);
 
-  /* Typography */
   --font: "Press Start 2P", "Courier New", Courier, monospace;
   --text-xs: 0.625rem;
   --text-sm: 0.6875rem;
@@ -26,22 +24,18 @@
   --text-xl: 1.5rem;
   --text-badge: 2.5rem;
 
-  /* Borders */
   --border-thick: 0.4375rem solid var(--color-border);
   --border-mid: 0.25rem solid var(--color-border);
   --border-thin: 0.1875rem solid var(--color-border);
   --border-dim: 0.125rem solid var(--color-divider);
 
-  /* Transitions */
   --t-fast: 120ms ease;
 
-  /* Layout */
   --max-content: 87.5rem;
   --header-pb: 7.5rem;
   --header-pb-mobile: 3rem;
 }
 
-/* Hint overrides */
 :root[data-hint="win"] {
   --color-hint: var(--color-win);
 }
@@ -142,9 +136,9 @@ body {
   inset-block-start: 1rem;
   inset-inline-end: 1rem;
   font-size: var(--text-xs);
-  color: var(--color-muted);
-  border: 0.125rem solid var(--color-border);
-  padding: 0.375rem 0.75rem;
+  color: var(--color-text);
+  border: var(--border-thin);
+  padding: 0.5rem 0.875rem;
 }
 .range-short {
   display: inline;
@@ -207,7 +201,6 @@ body {
   justify-content: flex-start;
 }
 
-/* Input */
 .panel__input {
   background: none;
   border: var(--border-mid);
@@ -230,14 +223,22 @@ body {
   cursor: not-allowed;
 }
 
-@media (max-width: 37.4375rem) {
+@media (max-width: 64rem) {
   .panel__input,
   .btn--solid {
     display: none;
   }
+
+  .header__again .fa-rotate {
+    font-size: 1.125rem;
+  }
+
+  .header__between {
+    font-size: var(--text-sm);
+    padding: 0.5rem 1rem;
+  }
 }
 
-/* Feedback message */
 .panel__message {
   font-size: 0.875rem;
   line-height: 1.8;
@@ -260,14 +261,9 @@ body {
   font-size: 0.875rem;
 }
 
-.panel__score-hs,
 #js-highscore {
   color: var(--color-win);
   font-size: 0.875rem;
-}
-
-.panel__score--highscore span {
-  color: var(--color-win);
 }
 
 .panel__attempts {
@@ -309,8 +305,11 @@ body {
   user-select: none;
 }
 
-@media (max-width: 37.4375rem) {
+@media (max-width: 64rem) {
   .numgrid__cell {
+    inline-size: 3.25rem;
+    block-size: 3.25rem;
+    font-size: 0.75rem;
     cursor: pointer;
   }
   .numgrid__cell:active {
@@ -322,11 +321,13 @@ body {
   .numgrid__cell--win {
     cursor: default;
   }
+
+  .numgrid {
+    gap: 0.625rem;
+    inline-size: 100%;
+  }
 }
 
-.numgrid__cell--tried {
-  text-decoration: line-through;
-}
 .numgrid__cell--high {
   border-color: var(--color-high-tint);
   color: var(--color-high);
@@ -339,7 +340,6 @@ body {
   background: var(--color-win);
   border-color: var(--color-win);
   color: #222;
-  text-decoration: none;
 }
 
 /* ==============================================
@@ -370,6 +370,7 @@ body {
   .numgrid__label {
     display: block;
   }
+
   .header__between {
     font-size: 0.75rem;
     padding: 0.5rem 1rem;
@@ -382,22 +383,14 @@ body {
     inset-block-start: 0.875rem;
     inset-inline-start: 1.25rem;
   }
+
   .numgrid {
-    inline-size: 65%;
-    gap: 0.6875rem;
+    inline-size: 75%;
   }
-  .numgrid__cell {
-    inline-size: 2.625rem;
-    block-size: 2.625rem;
-    font-size: 0.75rem;
-  }
+
   .panel {
     padding: 2rem 1.75rem;
     gap: 1.75rem;
-  }
-  .panel__input,
-  .btn--solid {
-    inline-size: 55%;
   }
 }
 
@@ -408,6 +401,7 @@ body {
   .numgrid__label {
     display: block;
   }
+
   .header {
     padding-block-start: 0;
     padding-block-end: var(--header-pb);

@@ -30,7 +30,6 @@ const lockControls = function () {
 const unlockControls = function () {
   document.getElementById("js-input").disabled = false;
   document.getElementById("js-check").disabled = false;
-  // Only focus the input on non-touch / desktop
   if (window.matchMedia("(min-width: 64.0625rem)").matches) {
     document.getElementById("js-input").focus();
   }
@@ -83,19 +82,21 @@ const handleLoss = function () {
   document.querySelector("body").style.backgroundColor = "#950303";
   document.getElementById("js-badge").textContent = secretNumber;
 
-  const allCells = document.querySelectorAll(".numgrid__cell");
-  for (let i = 0; i < allCells.length; i++) {
-    allCells[i].style.color = "#fff";
-    allCells[i].style.borderColor = "#fff";
-  }
+  document.querySelectorAll(".numgrid__cell").forEach(function (c) {
+    c.style.color = "#fff";
+    c.style.borderColor = "#fff";
+  });
 
   document.querySelector(".numgrid__label").style.color = "#fff";
   document.querySelector(".panel__attempts").style.color = "#fff";
+  document.querySelector(".panel__message").style.color = "#fff";
+  document.querySelector(".panel--left").style.borderColor = "#fff";
+  document.querySelectorAll(".panel__divider").forEach(function (el) {
+    el.style.borderColor = "#fff";
+  });
 };
 
 // 7. CHECK GUESS
-// Accepts an optional number (from grid tap on mobile).
-// Falls back to reading the input (desktop).
 const checkGuess = function (forcedGuess) {
   if (!gameActive) return;
 
@@ -118,6 +119,28 @@ const checkGuess = function (forcedGuess) {
       displayMessage("⛔ Out of range!");
       errorSound.currentTime = 0;
       errorSound.play();
+      return;
+    }
+
+    const guessedCell = document.getElementById("cell-" + guess);
+    const alreadyTried =
+      guessedCell.classList.contains("numgrid__cell--high") ||
+      guessedCell.classList.contains("numgrid__cell--low");
+
+    if (alreadyTried) {
+      attempts++;
+      document.getElementById("js-attempts").textContent = attempts;
+
+      if (score > 1) {
+        displayMessage("⚠️ Already tried!");
+        errorSound.currentTime = 0;
+        errorSound.play();
+        score--;
+        document.getElementById("js-score").textContent = score;
+      } else {
+        handleLoss();
+      }
+      guessInput.value = "";
       return;
     }
   }
@@ -167,33 +190,43 @@ const checkGuess = function (forcedGuess) {
   }
 
   guessInput.value = "";
-  // Only re-focus input on desktop — avoids keyboard popping up on mobile
   if (window.matchMedia("(min-width: 64.0625rem)").matches) {
     guessInput.focus();
   }
 };
 
-// 8. LISTENERS — desktop input + button
+// 8. LISTENERS
 document.getElementById("js-check").addEventListener("click", checkGuess);
 document.getElementById("js-input").addEventListener("keydown", function (e) {
   if (e.key === "Enter") checkGuess();
 });
 
-// Grid tap listener — mobile only (below 64.0625rem / 1025px)
-// Already-guessed cells (--high, --low, --win) are ignored.
-// gameActive guard means it also does nothing during loading or after game ends.
 gridContainer.addEventListener("click", function (e) {
   if (window.matchMedia("(min-width: 64.0625rem)").matches) return;
 
   const cell = e.target.closest(".numgrid__cell");
   if (!cell) return;
   if (!gameActive) return;
+  if (cell.classList.contains("numgrid__cell--win")) return;
+
   if (
     cell.classList.contains("numgrid__cell--high") ||
-    cell.classList.contains("numgrid__cell--low") ||
-    cell.classList.contains("numgrid__cell--win")
-  )
+    cell.classList.contains("numgrid__cell--low")
+  ) {
+    attempts++;
+    document.getElementById("js-attempts").textContent = attempts;
+
+    if (score > 1) {
+      displayMessage("⚠️ Already tried!");
+      errorSound.currentTime = 0;
+      errorSound.play();
+      score--;
+      document.getElementById("js-score").textContent = score;
+    } else {
+      handleLoss();
+    }
     return;
+  }
 
   const number = parseInt(cell.textContent, 10);
   checkGuess(number);
@@ -207,6 +240,7 @@ document.getElementById("js-again").addEventListener("click", function () {
 
   document.getElementById("js-score").textContent = score;
   document.getElementById("js-attempts").textContent = attempts;
+
   const badge = document.getElementById("js-badge");
   badge.textContent = "?";
   badge.style.backgroundColor = "";
@@ -217,18 +251,21 @@ document.getElementById("js-again").addEventListener("click", function () {
   document.getElementById("js-grid").style.backgroundColor = "";
   document.querySelector(".numgrid__label").style.color = "";
   document.querySelector(".panel__attempts").style.color = "";
+  document.querySelector(".panel__message").style.color = "";
+  document.querySelector(".panel--left").style.borderColor = "";
+  document.querySelectorAll(".panel__divider").forEach(function (el) {
+    el.style.borderColor = "";
+  });
   document.documentElement.removeAttribute("data-hint");
 
-  const allCells = document.querySelectorAll(".numgrid__cell");
-  for (let i = 0; i < allCells.length; i++) {
-    allCells[i].className = "numgrid__cell";
-    allCells[i].style.color = "";
-    allCells[i].style.borderColor = "";
-    allCells[i].style.backgroundColor = "";
-  }
+  document.querySelectorAll(".numgrid__cell").forEach(function (c) {
+    c.className = "numgrid__cell";
+    c.style.color = "";
+    c.style.borderColor = "";
+    c.style.backgroundColor = "";
+  });
 
-  const guessInput = document.getElementById("js-input");
-  guessInput.value = "";
+  document.getElementById("js-input").value = "";
 
   playStartSequence();
 });

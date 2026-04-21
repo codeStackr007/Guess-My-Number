@@ -1,28 +1,26 @@
-# Guess My Number!
+# Guess My Number
 
 Two versions of the same game — one from a tutorial, one extended with my own ideas.
 
 ## Folder Structure
 
-```
 guess-my-number/
 ├── original/
-│   ├── index.html
-│   ├── style.css
-│   └── script.js
+│ ├── index.html
+│ ├── style.css
+│ └── script.js
 │
 ├── upgraded/
-│   ├── index.html
-│   ├── style.css
-│   ├── script.js
-│   └── sounds/
-│       ├── START.mp3
-│       ├── WIN.mp3
-│       ├── ERROR.mp3
-│       └── OVER.mp3
+│ ├── index.html
+│ ├── style.css
+│ ├── script.js
+│ └── sounds/
+│ ├── START.mp3
+│ ├── WIN.mp3
+│ ├── ERROR.mp3
+│ └── OVER.mp3
 │
 └── README.md
-```
 
 ## Original Version
 
@@ -50,7 +48,7 @@ Or use Live Server in VS Code.
 
 Same core game, but with a new interface and extra features I added after learning the fundamentals.
 
-### How to Run
+### How to Run?
 
 1. Open the `upgraded/` folder
 2. Double‑click `index.html`
@@ -114,14 +112,14 @@ No frameworks. No build tools.
 
 ## What I Learned
 
-### Original Version:
+### Original-Version
 
 - DOM selection and manipulation
 - Click event handling
 - Game state management
 - CSS updates via JavaScript
 
-### Upgraded Version:
+### Upgraded-Version
 
 - Dynamic element creation with loops
 - Event delegation for grid clicks

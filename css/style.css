@@ -24,7 +24,7 @@
   --text-base: 0.75rem;
   --text-md: 0.875rem;
   --text-xl: 1.5rem;
-  --text-badge: 2.625rem;
+  --text-badge: 2.5rem;
 
   /* Borders */
   --border-thick: 0.4375rem solid var(--color-border);

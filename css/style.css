@@ -231,10 +231,10 @@ body {
   cursor: not-allowed;
 }
 
-/* Feedback message — BIGGER */
+/* Feedback message  */
 .panel__message {
-  font-size: 1.0625rem;
-  line-height: 2;
+  font-size: 0.875rem;
+  line-height: 1.8;
   color: var(--color-hint);
   min-block-size: 2.4em;
 }
@@ -245,29 +245,28 @@ body {
   border-block-start: var(--border-dim);
 }
 
-/* Score line — BIGGER */
 .panel__score {
-  font-size: 1rem;
+  font-size: 0.75rem;
   color: var(--color-muted);
 }
 .panel__score span {
   color: var(--color-text);
-  font-size: 1.125rem;
+  font-size: 0.875rem;
 }
 
 .panel__score-hs,
 #js-highscore {
   color: var(--color-win);
-  font-size: 1.125rem;
+  font-size: 0.875rem;
 }
 
 .panel__score--highscore span {
   color: var(--color-win);
 }
 
-/* Attempts — slightly larger */
+/* Attempts — slightly smaller */
 .panel__attempts {
-  font-size: var(--text-base); /* was --text-sm (0.6875rem), now 0.75rem */
+  font-size: var(--text-xs);
   color: var(--color-faint);
 }
 
@@ -283,6 +282,7 @@ body {
   margin-block-start: 2.75rem;
 }
 .numgrid__label {
+  display: none;
   inline-size: 100%;
   text-align: center;
   font-size: var(--text-sm);
@@ -347,6 +347,9 @@ body {
    TABLET
    ============================================== */
 @media (min-width: 37.5rem) and (max-width: 64rem) {
+  .numgrid__label {
+    display: block;
+  }
   .header__between {
     font-size: 0.75rem;
     padding: 0.5rem 1rem;
@@ -382,6 +385,9 @@ body {
    DESKTOP
    ============================================== */
 @media (min-width: 64.0625rem) {
+  .numgrid__label {
+    display: block; /* Show on desktop */
+  }
   .header {
     padding-block-start: 0;
     padding-block-end: var(--header-pb);

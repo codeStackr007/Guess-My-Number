@@ -4,7 +4,6 @@
 const winSound = new Audio("sounds/WIN.mp3");
 const errorSound = new Audio("sounds/ERROR.mp3");
 const gameOverSound = new Audio("sounds/OVER.mp3");
-// The "Ding" sound for that Game Boy feel
 const startSound = new Audio("sounds/START.mp3");
 
 // 2. DATA
@@ -12,7 +11,7 @@ let secretNumber = Math.floor(Math.random() * 20) + 1;
 let score = 20;
 let attempts = 0;
 let highscore = 0;
-let gameActive = false; // Start locked for the intro
+let gameActive = false;
 
 // 3. HELPERS
 const displayMessage = function (message) {
@@ -31,7 +30,10 @@ const lockControls = function () {
 const unlockControls = function () {
   document.getElementById("js-input").disabled = false;
   document.getElementById("js-check").disabled = false;
-  document.getElementById("js-input").focus();
+  // Only focus the input on non-touch / desktop
+  if (window.matchMedia("(min-width: 64.0625rem)").matches) {
+    document.getElementById("js-input").focus();
+  }
 };
 
 // 4. BUILD GRID
@@ -45,21 +47,17 @@ for (let i = 1; i <= 20; i++) {
 }
 document.getElementById("js-highscore").textContent = highscore;
 
-// ── NEW: GAME BOY START FEATURE ──
-// This creates that "Nintendo" logo feel where the screen is locked
-// until the "Ding" sound finishes.
+// 5. START SEQUENCE
 const playStartSequence = function () {
   lockControls();
   gameActive = false;
   displayMessage("⭐ LOADING...");
 
-  // Reset sound to beginning
   startSound.currentTime = 0;
 
   startSound
     .play()
     .then(() => {
-      // Once the sound ends, the game "unlocks"
       startSound.onended = function () {
         gameActive = true;
         unlockControls();
@@ -67,14 +65,13 @@ const playStartSequence = function () {
       };
     })
     .catch(() => {
-      // If the browser blocks the sound, we just start the game
       gameActive = true;
       unlockControls();
       displayMessage("Start guessing...");
     });
 };
 
-// 5. LOSE
+// 6. LOSE
 const handleLoss = function () {
   displayMessage("💥 You lose! Try again.");
   gameActive = false;
@@ -96,25 +93,33 @@ const handleLoss = function () {
   document.querySelector(".panel__attempts").style.color = "#fff";
 };
 
-// 6. CHECK GUESS
-const checkGuess = function () {
+// 7. CHECK GUESS
+// Accepts an optional number (from grid tap on mobile).
+// Falls back to reading the input (desktop).
+const checkGuess = function (forcedGuess) {
   if (!gameActive) return;
 
   const guessInput = document.getElementById("js-input");
-  const guess = Number(guessInput.value);
+  let guess;
 
-  if (!guessInput.value.trim()) {
-    displayMessage("⛔ No Number!");
-    errorSound.currentTime = 0;
-    errorSound.play();
-    return;
-  }
+  if (forcedGuess !== undefined) {
+    guess = forcedGuess;
+  } else {
+    guess = Number(guessInput.value);
 
-  if (guess < 1 || guess > 20) {
-    displayMessage("⛔ Out of range!");
-    errorSound.currentTime = 0;
-    errorSound.play();
-    return;
+    if (!guessInput.value.trim()) {
+      displayMessage("⛔ No Number!");
+      errorSound.currentTime = 0;
+      errorSound.play();
+      return;
+    }
+
+    if (guess < 1 || guess > 20) {
+      displayMessage("⛔ Out of range!");
+      errorSound.currentTime = 0;
+      errorSound.play();
+      return;
+    }
   }
 
   attempts++;
@@ -135,23 +140,9 @@ const checkGuess = function () {
     badge.textContent = secretNumber;
     badge.style.backgroundColor = "#c8f77b";
     badge.style.color = "#222222";
+    badge.classList.add("header__badge--win");
 
     cell.classList.add("numgrid__cell--win");
-
-    const allCells = document.querySelectorAll(".numgrid__cell");
-    for (let i = 0; i < allCells.length; i++) {
-      if (
-        !allCells[i].classList.contains("numgrid__cell--win") &&
-        !allCells[i].classList.contains("numgrid__cell--high") &&
-        !allCells[i].classList.contains("numgrid__cell--low")
-      ) {
-        allCells[i].style.color = "#c8f77b";
-        allCells[i].style.borderColor = "#c8f77b";
-      }
-    }
-
-    document.querySelector(".numgrid__label").style.color = "#222222";
-    document.querySelector(".panel__attempts").style.color = "#222222";
 
     if (score > highscore) {
       highscore = score;
@@ -176,18 +167,39 @@ const checkGuess = function () {
   }
 
   guessInput.value = "";
-  // On mobile, focusing can pop the keyboard up and down.
-  // If users find it annoying, we could remove this line.
-  guessInput.focus();
+  // Only re-focus input on desktop — avoids keyboard popping up on mobile
+  if (window.matchMedia("(min-width: 64.0625rem)").matches) {
+    guessInput.focus();
+  }
 };
 
-// 7. LISTENERS
+// 8. LISTENERS — desktop input + button
 document.getElementById("js-check").addEventListener("click", checkGuess);
 document.getElementById("js-input").addEventListener("keydown", function (e) {
   if (e.key === "Enter") checkGuess();
 });
 
-// 8. RESET
+// Grid tap listener — mobile only (below 64.0625rem / 1025px)
+// Already-guessed cells (--high, --low, --win) are ignored.
+// gameActive guard means it also does nothing during loading or after game ends.
+gridContainer.addEventListener("click", function (e) {
+  if (window.matchMedia("(min-width: 64.0625rem)").matches) return;
+
+  const cell = e.target.closest(".numgrid__cell");
+  if (!cell) return;
+  if (!gameActive) return;
+  if (
+    cell.classList.contains("numgrid__cell--high") ||
+    cell.classList.contains("numgrid__cell--low") ||
+    cell.classList.contains("numgrid__cell--win")
+  )
+    return;
+
+  const number = parseInt(cell.textContent, 10);
+  checkGuess(number);
+});
+
+// 9. RESET
 document.getElementById("js-again").addEventListener("click", function () {
   secretNumber = Math.floor(Math.random() * 20) + 1;
   score = 20;
@@ -195,11 +207,11 @@ document.getElementById("js-again").addEventListener("click", function () {
 
   document.getElementById("js-score").textContent = score;
   document.getElementById("js-attempts").textContent = attempts;
-  document.getElementById("js-badge").textContent = "?";
-
   const badge = document.getElementById("js-badge");
+  badge.textContent = "?";
   badge.style.backgroundColor = "";
   badge.style.color = "";
+  badge.classList.remove("header__badge--win");
 
   document.querySelector("body").style.backgroundColor = "";
   document.getElementById("js-grid").style.backgroundColor = "";
@@ -218,9 +230,8 @@ document.getElementById("js-again").addEventListener("click", function () {
   const guessInput = document.getElementById("js-input");
   guessInput.value = "";
 
-  // Re-run the intro sequence
   playStartSequence();
 });
 
-// 9. KICK OFF
+// 10. KICK OFF
 playStartSequence();

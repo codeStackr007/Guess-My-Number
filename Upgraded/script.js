@@ -51,6 +51,11 @@ for (let i = 1; i <= 20; i++) {
 document.getElementById("js-highscore").textContent = highscore;
 
 // 5. START SEQUENCE
+// On desktop the sound fires immediately via autoplay.
+// On mobile the browser blocks autoplay — so we show LOADING...,
+// lock the controls, and wait for the first touch anywhere on the page.
+// The moment the user touches something the sound plays and the
+// lock releases when it ends — same experience, just triggered by touch.
 const playStartSequence = function () {
   lockControls();
   gameActive = false;
@@ -59,20 +64,52 @@ const playStartSequence = function () {
 
   startSound.currentTime = 0;
 
-  startSound
-    .play()
-    .then(() => {
-      startSound.onended = function () {
+  const attemptPlay = function () {
+    startSound
+      .play()
+      .then(function () {
+        startSound.onended = function () {
+          gameActive = true;
+          unlockControls();
+          displayMessage("Start guessing...");
+        };
+      })
+      .catch(function () {
+        // Still blocked — unlock anyway so game is not stuck
         gameActive = true;
         unlockControls();
         displayMessage("Start guessing...");
-      };
-    })
-    .catch(() => {
-      gameActive = true;
-      unlockControls();
-      displayMessage("Start guessing...");
-    });
+      });
+  };
+
+  const playResult = startSound.play();
+
+  if (playResult !== undefined) {
+    playResult
+      .then(function () {
+        // Autoplay succeeded (desktop)
+        startSound.onended = function () {
+          gameActive = true;
+          unlockControls();
+          displayMessage("Start guessing...");
+        };
+      })
+      .catch(function () {
+        // Autoplay blocked (mobile/tablet) — wait for first touch
+        const onFirstTouch = function () {
+          document.removeEventListener("touchstart", onFirstTouch);
+          document.removeEventListener("mousedown", onFirstTouch);
+          attemptPlay();
+        };
+        document.addEventListener("touchstart", onFirstTouch, { once: true });
+        document.addEventListener("mousedown", onFirstTouch, { once: true });
+      });
+  } else {
+    // Old browser fallback
+    gameActive = true;
+    unlockControls();
+    displayMessage("Start guessing...");
+  }
 };
 
 // 6. LOSE
@@ -114,7 +151,6 @@ const checkGuess = function (forcedGuess) {
   } else {
     const rawValue = guessInput.value.trim();
 
-    // Check for empty input
     if (!rawValue) {
       displayMessage("⛔ No Number!");
       errorSound.currentTime = 0;
@@ -125,7 +161,6 @@ const checkGuess = function (forcedGuess) {
 
     guess = Number(rawValue);
 
-    // Check if it's a valid number
     if (isNaN(guess) || !Number.isInteger(guess)) {
       displayMessage("⛔ Invalid number!");
       errorSound.currentTime = 0;
@@ -135,7 +170,6 @@ const checkGuess = function (forcedGuess) {
       return;
     }
 
-    // Check range
     if (guess < 1 || guess > 20) {
       displayMessage("⛔ Out of range!");
       errorSound.currentTime = 0;
